@@ -77,7 +77,9 @@ public class Task1Mapper extends Mapper<Object, Text, Text, Text> {
 			float distance_fare_product = distance_float * fare_amount_float;
 			float distance_squared = distance_float * distance_float;
 
-			context.write(new Text(","), new Text(distance_float + "," + fare_amount_float + "," + distance_fare_product + "," + distance_squared));
+			// System.err.println(distance_float + "," + fare_amount_float + "," + distance_fare_product + "," + distance_squared);
+
+			context.write(new Text("a"), new Text(distance_float + "," + fare_amount_float + "," + distance_fare_product + "," + distance_squared + ",1"));
 
 
 			
