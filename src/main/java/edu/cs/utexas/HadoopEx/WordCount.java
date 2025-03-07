@@ -71,7 +71,7 @@ public class WordCount extends Configured implements Tool {
 			double m = 0.0; // Initial slope
 			double b = 0.0; // Initial intercept
 			double learningRate = 0.001; // Initial learning rate
-			int maxIterations = 5; // Number of iterations
+			int maxIterations = 100; // Number of iterations
 			int NUM_FEATURES = 5;
 
 			double[] parameters = new double[NUM_FEATURES];
@@ -151,7 +151,7 @@ public class WordCount extends Configured implements Tool {
 	
 				FileInputFormat.addInputPath(job, new Path(args[0]));
 				FileOutputFormat.setOutputPath(job, new Path(args[3] + "/iteration" + i));
-				if (!job.waitForCompletion(true)) {  // <- THIS WAS MISSING
+				if (!job.waitForCompletion(true)) {  
 					System.err.println("Task3 failed at iteration " + i);
 					return 1;
 				}
@@ -176,6 +176,7 @@ public class WordCount extends Configured implements Tool {
 				m2 -= learningRate * dm2;
 				m3 -= learningRate * dm3;
 				m4 -= learningRate * dm4;
+
 
 			}
 			

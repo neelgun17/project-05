@@ -81,7 +81,7 @@ public class Task1Mapper extends Mapper<Object, Text, Text, DoubleWritable> {
 			context.write(new Text("fare_amount"), new DoubleWritable(fare_amount_Double));
 			context.write(new Text("distance_fare_product"), new DoubleWritable(distance_fare_product));
 			context.write(new Text("distance_squared"), new DoubleWritable(distance_squared));
-
+			context.write(new Text("counts"), new DoubleWritable(1));
 			
 		}
 	}
