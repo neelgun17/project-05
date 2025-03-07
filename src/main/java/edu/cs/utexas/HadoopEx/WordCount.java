@@ -64,7 +64,6 @@ public class WordCount extends Configured implements Tool {
 			if (!job.waitForCompletion(true)) {
 				return 1;
 			}
-
 			
 			conf = new Configuration();
 
@@ -72,7 +71,13 @@ public class WordCount extends Configured implements Tool {
 			double m = 0.0; // Initial slope
 			double b = 0.0; // Initial intercept
 			double learningRate = 0.001; // Initial learning rate
-			int maxIterations = 100; // Number of iterations
+			int maxIterations = 5; // Number of iterations
+			int NUM_FEATURES = 5;
+
+			double[] parameters = new double[NUM_FEATURES];
+        	for(int i = 0; i < NUM_FEATURES; i++) {
+            	parameters[i] = 0.1; // Initial parameter values
+        	}
 	
 			conf.set("learningRate", String.valueOf(learningRate));
 	
@@ -115,7 +120,67 @@ public class WordCount extends Configured implements Tool {
 	
 			System.out.println("Final model: m=" + m + ", b=" + b);
 	
-			return 0;
+			if (!job.waitForCompletion(true)) {
+				return 1;
+			}
+
+			m = 0.1;
+			b = 0.1;
+			double m2 = 0.1;
+			double m3 = 0.1;
+			double m4 = 0.1;
+
+			conf = new Configuration();
+			conf.set("learningRate", String.valueOf(learningRate));
+			for (int i = 0; i < maxIterations; i++) {
+				// Set current parameters in configuration
+				conf.set("m", String.valueOf(m));
+				conf.set("m2", String.valueOf(m2));
+				conf.set("m3", String.valueOf(m3));
+				conf.set("m4", String.valueOf(m4));
+				conf.set("b", String.valueOf(b));
+	
+				job = Job.getInstance(conf, "Multiple Gradient Descent Iteration " + i);
+				job.setJarByClass(WordCount.class);
+	
+				job.setMapperClass(Task3Mapper.class);
+				job.setReducerClass(Task3Reducer.class);
+	
+				job.setOutputKeyClass(Text.class);
+				job.setOutputValueClass(DoubleArrayWritable.class);
+	
+				FileInputFormat.addInputPath(job, new Path(args[0]));
+				FileOutputFormat.setOutputPath(job, new Path(args[3] + "/iteration" + i));
+				if (!job.waitForCompletion(true)) {  // <- THIS WAS MISSING
+					System.err.println("Task3 failed at iteration " + i);
+					return 1;
+				}
+
+				double dm = job.getCounters().findCounter("Gradient", "m").getValue() / 1e6; // Scale back by 1e6
+				double db = job.getCounters().findCounter("Gradient", "b").getValue() / 1e6; // Scale back by 1e6
+				double dm2 = job.getCounters().findCounter("Gradient", "m2").getValue() / 1e6; // Scale back by 1e6
+				double dm3 = job.getCounters().findCounter("Gradient", "m3").getValue() / 1e6; // Scale back by 1e6
+				double dm4 = job.getCounters().findCounter("Gradient", "m4").getValue() / 1e6; // Scale back by 1e6
+
+				double c = job.getCounters().findCounter("Gradient", "c").getValue();
+
+
+				dm /= c;
+				db /= c;
+				dm2 /= c;
+				dm3 /= c;
+				dm4 /= c;
+
+				m -= learningRate * dm;
+				b -= learningRate * db;
+				m2 -= learningRate * dm2;
+				m3 -= learningRate * dm3;
+				m4 -= learningRate * dm4;
+
+			}
+			
+
+			return (job.waitForCompletion(true) ? 0 : 1);
 
 
 		} catch (InterruptedException | ClassNotFoundException | IOException e) {
@@ -123,5 +188,9 @@ public class WordCount extends Configured implements Tool {
 			e.printStackTrace();
 			return 2;
 		}
+
+
+
+
 	}
 }
